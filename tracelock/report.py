@@ -4,12 +4,14 @@ from dataclasses import asdict
 from .correlator import AttackChain
 from .risk import RiskAssessment
 from .story import Story
+from .mitre import MitreTechnique
 
 
 def format_report(
     chains: list[AttackChain],
     assessments: list[RiskAssessment],
     stories: list[Story],
+    mitre_mappings: list[list[MitreTechnique]],
 ) -> str:
 
     lines = []
@@ -22,8 +24,13 @@ def format_report(
     lines.append(f"Attack chains detected: {len(chains)}")
     lines.append("")
 
-    for index, (chain, assessment, story) in enumerate(
-        zip(chains, assessments, stories),
+    for index, (chain, assessment, story, techniques) in enumerate(
+        zip(
+            chains,
+            assessments,
+            stories,
+            mitre_mappings,
+        ),
         start=1,
     ):
         lines.append("-" * 70)
@@ -43,6 +50,20 @@ def format_report(
 
         for event in story.timeline:
             lines.append(f"  {event}")
+
+        lines.append("")
+
+        lines.append("MITRE ATT&CK:")
+
+        if techniques:
+            for technique in techniques:
+                lines.append(
+                    f"  {technique.technique_id}  "
+                    f"{technique.name} "
+                    f"[{technique.tactic}]"
+                )
+        else:
+            lines.append("  No mapped techniques.")
 
         lines.append("")
 
@@ -68,6 +89,7 @@ def build_json_report(
     chains: list[AttackChain],
     assessments: list[RiskAssessment],
     stories: list[Story],
+    mitre_mappings: list[list[MitreTechnique]],
 ) -> str:
 
     report = {
@@ -76,15 +98,20 @@ def build_json_report(
         "chains": [],
     }
 
-    for chain, assessment, story in zip(
+    for chain, assessment, story, techniques in zip(
         chains,
         assessments,
         stories,
+        mitre_mappings,
     ):
         report["chains"].append(
             {
                 "risk": asdict(assessment),
                 "story": asdict(story),
+                "mitre_attack": [
+                    asdict(technique)
+                    for technique in techniques
+                ],
                 "events": [
                     {
                         "timestamp": event.timestamp.isoformat(),

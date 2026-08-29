@@ -5,6 +5,7 @@ from .parser import parse_file
 from .correlator import build_chains
 from .risk import assess_risk
 from .story import build_story
+from .mitre import map_attack_chain
 from .report import format_report, build_json_report, save_report
 
 
@@ -50,10 +51,16 @@ def main() -> int:
         )
     ]
 
+    mitre_mappings = [
+        map_attack_chain(chain)
+        for chain in chains
+    ]
+
     report = format_report(
         chains,
         assessments,
         stories,
+        mitre_mappings,
     )
 
     print(report)
@@ -63,6 +70,7 @@ def main() -> int:
             chains,
             assessments,
             stories,
+            mitre_mappings,
         )
 
         save_report(
