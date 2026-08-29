@@ -2,9 +2,10 @@ import json
 from dataclasses import asdict
 
 from .correlator import AttackChain
+from .evidence import Evidence
+from .mitre import MitreTechnique
 from .risk import RiskAssessment
 from .story import Story
-from .mitre import MitreTechnique
 
 
 def format_report(
@@ -12,6 +13,7 @@ def format_report(
     assessments: list[RiskAssessment],
     stories: list[Story],
     mitre_mappings: list[list[MitreTechnique]],
+    evidence_mappings: list[list[Evidence]],
 ) -> str:
 
     lines = []
@@ -24,13 +26,8 @@ def format_report(
     lines.append(f"Attack chains detected: {len(chains)}")
     lines.append("")
 
-    for index, (chain, assessment, story, techniques) in enumerate(
-        zip(
-            chains,
-            assessments,
-            stories,
-            mitre_mappings,
-        ),
+    for index, (chain, assessment, story) in enumerate(
+        zip(chains, assessments, stories),
         start=1,
     ):
         lines.append("-" * 70)
@@ -53,19 +50,46 @@ def format_report(
 
         lines.append("")
 
-        lines.append("MITRE ATT&CK:")
+        # MITRE ATT&CK mapping
+        techniques = (
+            mitre_mappings[index - 1]
+            if index - 1 < len(mitre_mappings)
+            else []
+        )
 
         if techniques:
+            lines.append("MITRE ATT&CK:")
+
             for technique in techniques:
                 lines.append(
                     f"  {technique.technique_id}  "
                     f"{technique.name} "
                     f"[{technique.tactic}]"
                 )
-        else:
-            lines.append("  No mapped techniques.")
 
-        lines.append("")
+            lines.append("")
+
+        # Evidence
+        evidence = (
+            evidence_mappings[index - 1]
+            if index - 1 < len(evidence_mappings)
+            else []
+        )
+
+        if evidence:
+            lines.append("Evidence:")
+
+            for item in evidence:
+                lines.append(
+                    f"  [{item.severity}] "
+                    f"{item.category}: "
+                    f"{item.title}"
+                )
+                lines.append(
+                    f"      {item.description}"
+                )
+
+            lines.append("")
 
         lines.append("Risk factors:")
 
@@ -90,6 +114,7 @@ def build_json_report(
     assessments: list[RiskAssessment],
     stories: list[Story],
     mitre_mappings: list[list[MitreTechnique]],
+    evidence_mappings: list[list[Evidence]],
 ) -> str:
 
     report = {
@@ -98,12 +123,21 @@ def build_json_report(
         "chains": [],
     }
 
-    for chain, assessment, story, techniques in zip(
-        chains,
-        assessments,
-        stories,
-        mitre_mappings,
+    for index, (chain, assessment, story) in enumerate(
+        zip(chains, assessments, stories)
     ):
+        techniques = (
+            mitre_mappings[index]
+            if index < len(mitre_mappings)
+            else []
+        )
+
+        evidence = (
+            evidence_mappings[index]
+            if index < len(evidence_mappings)
+            else []
+        )
+
         report["chains"].append(
             {
                 "risk": asdict(assessment),
@@ -111,6 +145,10 @@ def build_json_report(
                 "mitre_attack": [
                     asdict(technique)
                     for technique in techniques
+                ],
+                "evidence": [
+                    asdict(item)
+                    for item in evidence
                 ],
                 "events": [
                     {

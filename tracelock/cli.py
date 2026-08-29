@@ -6,6 +6,7 @@ from .correlator import build_chains
 from .risk import assess_risk
 from .story import build_story
 from .mitre import map_attack_chain
+from .evidence import build_evidence
 from .report import format_report, build_json_report, save_report
 
 
@@ -29,7 +30,10 @@ def main() -> int:
     try:
         events = parse_file(args.logfile)
     except OSError as error:
-        print(f"Error reading log file: {error}", file=sys.stderr)
+        print(
+            f"Error reading log file: {error}",
+            file=sys.stderr,
+        )
         return 1
 
     if not events:
@@ -56,11 +60,17 @@ def main() -> int:
         for chain in chains
     ]
 
+    evidence_mappings = [
+        build_evidence(chain)
+        for chain in chains
+    ]
+
     report = format_report(
         chains,
         assessments,
         stories,
         mitre_mappings,
+        evidence_mappings,
     )
 
     print(report)
@@ -71,6 +81,7 @@ def main() -> int:
             assessments,
             stories,
             mitre_mappings,
+            evidence_mappings,
         )
 
         save_report(
@@ -79,7 +90,9 @@ def main() -> int:
         )
 
         print()
-        print(f"JSON report saved to: {args.json}")
+        print(
+            f"JSON report saved to: {args.json}"
+        )
 
     return 0
 
