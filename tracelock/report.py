@@ -196,6 +196,7 @@ def build_json_report(
         evidence_items,
         behavior,
         anomaly,
+        recommendations,
     ) in zip(
         chains,
         assessments,
@@ -204,9 +205,8 @@ def build_json_report(
         evidence_mappings,
         behavior_profiles,
         anomaly_profiles,
-        recommendations,
+        recommendation_mappings,
     ):
-
         report["chains"].append(
             {
                 "risk": asdict(assessment),
