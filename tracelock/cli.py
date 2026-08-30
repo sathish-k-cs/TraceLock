@@ -7,6 +7,8 @@ from .risk import assess_risk
 from .story import build_story
 from .mitre import map_attack_chain
 from .evidence import build_evidence
+from .behavior import analyze_behavior
+from .anomaly import analyze_anomaly
 from .report import format_report, build_json_report, save_report
 
 
@@ -65,12 +67,24 @@ def main() -> int:
         for chain in chains
     ]
 
+    behavior_profiles = [
+        analyze_behavior(chain)
+        for chain in chains
+    ]
+
+    anomaly_profiles = [
+        analyze_anomaly(chain)
+        for chain in chains
+    ]
+
     report = format_report(
         chains,
         assessments,
         stories,
         mitre_mappings,
         evidence_mappings,
+        behavior_profiles,
+        anomaly_profiles,
     )
 
     print(report)
@@ -82,6 +96,8 @@ def main() -> int:
             stories,
             mitre_mappings,
             evidence_mappings,
+            behavior_profiles,
+            anomaly_profiles,
         )
 
         save_report(

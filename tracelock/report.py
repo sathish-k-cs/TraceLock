@@ -2,10 +2,12 @@ import json
 from dataclasses import asdict
 
 from .correlator import AttackChain
-from .evidence import Evidence
-from .mitre import MitreTechnique
 from .risk import RiskAssessment
 from .story import Story
+from .mitre import MitreTechnique
+from .evidence import Evidence
+from .behavior import BehaviorProfile
+from .anomaly import AnomalyProfile
 
 
 def format_report(
@@ -14,6 +16,8 @@ def format_report(
     stories: list[Story],
     mitre_mappings: list[list[MitreTechnique]],
     evidence_mappings: list[list[Evidence]],
+    behavior_profiles: list[BehaviorProfile],
+    anomaly_profiles: list[AnomalyProfile],
 ) -> str:
 
     lines = []
@@ -26,10 +30,27 @@ def format_report(
     lines.append(f"Attack chains detected: {len(chains)}")
     lines.append("")
 
-    for index, (chain, assessment, story) in enumerate(
-        zip(chains, assessments, stories),
+    for index, (
+        chain,
+        assessment,
+        story,
+        techniques,
+        evidence_items,
+        behavior,
+        anomaly,
+    ) in enumerate(
+        zip(
+            chains,
+            assessments,
+            stories,
+            mitre_mappings,
+            evidence_mappings,
+            behavior_profiles,
+            anomaly_profiles,
+        ),
         start=1,
     ):
+
         lines.append("-" * 70)
         lines.append(f"ATTACK CHAIN #{index}")
         lines.append("-" * 70)
@@ -50,51 +71,75 @@ def format_report(
 
         lines.append("")
 
-        # MITRE ATT&CK mapping
-        techniques = (
-            mitre_mappings[index - 1]
-            if index - 1 < len(mitre_mappings)
-            else []
+        lines.append("MITRE ATT&CK:")
+
+        for technique in techniques:
+            lines.append(
+                f"  {technique.technique_id}  "
+                f"{technique.name} "
+                f"[{technique.tactic}]"
+            )
+
+        lines.append("")
+
+        lines.append("Evidence:")
+
+        for item in evidence_items:
+            lines.append(
+                f"  [{item.severity}] "
+                f"{item.category}: {item.title}"
+            )
+            lines.append(
+                f"      {item.description}"
+            )
+
+        lines.append("")
+
+        lines.append("Behavior Profile:")
+        lines.append(
+            f"  {behavior.name}"
+        )
+        lines.append(
+            f"  Confidence: {behavior.confidence}%"
+        )
+        lines.append(
+            f"  {behavior.description}"
         )
 
-        if techniques:
-            lines.append("MITRE ATT&CK:")
+        lines.append("  Indicators:")
 
-            for technique in techniques:
-                lines.append(
-                    f"  {technique.technique_id}  "
-                    f"{technique.name} "
-                    f"[{technique.tactic}]"
-                )
+        for indicator in behavior.indicators:
+            lines.append(
+                f"    - {indicator}"
+            )
 
-            lines.append("")
+        lines.append("")
 
-        # Evidence
-        evidence = (
-            evidence_mappings[index - 1]
-            if index - 1 < len(evidence_mappings)
-            else []
+        lines.append("Anomaly Analysis:")
+        lines.append(
+            f"  Score: {anomaly.score}/100"
+        )
+        lines.append(
+            f"  Severity: {anomaly.severity}"
         )
 
-        if evidence:
-            lines.append("Evidence:")
+        for finding in anomaly.findings:
+            lines.append(
+                f"  - {finding.name} "
+                f"[{finding.severity}]"
+            )
+            lines.append(
+                f"    {finding.description}"
+            )
 
-            for item in evidence:
-                lines.append(
-                    f"  [{item.severity}] "
-                    f"{item.category}: "
-                    f"{item.title}"
-                )
-                lines.append(
-                    f"      {item.description}"
-                )
-
-            lines.append("")
+        lines.append("")
 
         lines.append("Risk factors:")
 
         for factor in assessment.factors:
-            lines.append(f"  - {factor}")
+            lines.append(
+                f"  - {factor}"
+            )
 
         lines.append("")
 
@@ -115,6 +160,8 @@ def build_json_report(
     stories: list[Story],
     mitre_mappings: list[list[MitreTechnique]],
     evidence_mappings: list[list[Evidence]],
+    behavior_profiles: list[BehaviorProfile],
+    anomaly_profiles: list[AnomalyProfile],
 ) -> str:
 
     report = {
@@ -123,20 +170,23 @@ def build_json_report(
         "chains": [],
     }
 
-    for index, (chain, assessment, story) in enumerate(
-        zip(chains, assessments, stories)
+    for (
+        chain,
+        assessment,
+        story,
+        techniques,
+        evidence_items,
+        behavior,
+        anomaly,
+    ) in zip(
+        chains,
+        assessments,
+        stories,
+        mitre_mappings,
+        evidence_mappings,
+        behavior_profiles,
+        anomaly_profiles,
     ):
-        techniques = (
-            mitre_mappings[index]
-            if index < len(mitre_mappings)
-            else []
-        )
-
-        evidence = (
-            evidence_mappings[index]
-            if index < len(evidence_mappings)
-            else []
-        )
 
         report["chains"].append(
             {
@@ -148,16 +198,24 @@ def build_json_report(
                 ],
                 "evidence": [
                     asdict(item)
-                    for item in evidence
+                    for item in evidence_items
                 ],
+                "behavior": asdict(behavior),
+                "anomaly": asdict(anomaly),
                 "events": [
                     {
-                        "timestamp": event.timestamp.isoformat(),
-                        "source": event.source,
-                        "event_type": event.event_type,
-                        "message": event.message,
-                        "ip": event.ip,
-                        "user": event.user,
+                        "timestamp":
+                            event.timestamp.isoformat(),
+                        "source":
+                            event.source,
+                        "event_type":
+                            event.event_type,
+                        "message":
+                            event.message,
+                        "ip":
+                            event.ip,
+                        "user":
+                            event.user,
                     }
                     for event in chain.events
                 ],
