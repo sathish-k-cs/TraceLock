@@ -8,6 +8,7 @@ from .mitre import MitreTechnique
 from .evidence import Evidence
 from .behavior import BehaviorProfile
 from .anomaly import AnomalyProfile
+from .recommendation import Recommendation
 
 
 def format_report(
@@ -18,6 +19,7 @@ def format_report(
     evidence_mappings: list[list[Evidence]],
     behavior_profiles: list[BehaviorProfile],
     anomaly_profiles: list[AnomalyProfile],
+    recommendation_mappings: list[list[Recommendation]],
 ) -> str:
 
     lines = []
@@ -38,6 +40,7 @@ def format_report(
         evidence_items,
         behavior,
         anomaly,
+        recommendations,
     ) in enumerate(
         zip(
             chains,
@@ -47,6 +50,7 @@ def format_report(
             evidence_mappings,
             behavior_profiles,
             anomaly_profiles,
+            recommendation_mappings,
         ),
         start=1,
     ):
@@ -134,6 +138,19 @@ def format_report(
 
         lines.append("")
 
+        lines.append("Recommendations:")
+
+        for recommendation in recommendations:
+            lines.append(
+                f"  [{recommendation.priority}] "
+                f"{recommendation.title}"
+            )
+            lines.append(
+                f"    {recommendation.description}"
+            )
+
+        lines.append("")
+
         lines.append("Risk factors:")
 
         for factor in assessment.factors:
@@ -162,6 +179,7 @@ def build_json_report(
     evidence_mappings: list[list[Evidence]],
     behavior_profiles: list[BehaviorProfile],
     anomaly_profiles: list[AnomalyProfile],
+    recommendation_mappings: list[list[Recommendation]],
 ) -> str:
 
     report = {
@@ -186,6 +204,7 @@ def build_json_report(
         evidence_mappings,
         behavior_profiles,
         anomaly_profiles,
+        recommendations,
     ):
 
         report["chains"].append(
@@ -219,6 +238,11 @@ def build_json_report(
                     }
                     for event in chain.events
                 ],
+                "recommendations": [
+                    asdict(item)
+                    for item in recommendations
+                ],
+
             }
         )
 

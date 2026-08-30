@@ -10,6 +10,7 @@ from .evidence import build_evidence
 from .behavior import analyze_behavior
 from .anomaly import analyze_anomaly
 from .report import format_report, build_json_report, save_report
+from .recommendation import build_recommendations
 
 
 def main() -> int:
@@ -76,7 +77,10 @@ def main() -> int:
         analyze_anomaly(chain)
         for chain in chains
     ]
-
+    recommendation_mappings = [
+        build_recommendations(chain)
+        for chain in chains
+    ]
     report = format_report(
         chains,
         assessments,
@@ -85,6 +89,7 @@ def main() -> int:
         evidence_mappings,
         behavior_profiles,
         anomaly_profiles,
+        recommendation_mappings,
     )
 
     print(report)
@@ -98,6 +103,7 @@ def main() -> int:
             evidence_mappings,
             behavior_profiles,
             anomaly_profiles,
+            recommendation_mappings,
         )
 
         save_report(
