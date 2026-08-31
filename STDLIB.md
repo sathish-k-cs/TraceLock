@@ -1,175 +1,68 @@
-\# TraceLock Standard Library Compliance
+# TraceLock Standard Library Compliance
 
+TraceLock is a zero-third-party-runtime-dependency security event correlation engine built entirely with Python's standard library.
 
+## Zero-Dependency Policy
 
-TraceLock is designed to operate using Python's standard library for its core security-analysis functionality.
+TraceLock has **zero third-party runtime dependencies**.
 
+The core application runs using Python 3.13+ and does not require packages installed from PyPI.
 
+Core capabilities include:
 
-\## Core Dependency Policy
+- Security log parsing
+- Event normalization
+- Event correlation
+- Attack-chain reconstruction
+- Risk scoring
+- MITRE ATT&CK mapping
+- Evidence extraction
+- Behavioral profiling
+- Anomaly detection
+- Security recommendations
+- Terminal report generation
+- JSON report generation
 
+## Package Replacements
 
+TraceLock deliberately avoids commonly used third-party packages by using Python standard-library functionality.
 
-The TraceLock analysis engine does not require third-party packages to perform its core processing.
+| Normally Used Package | Standard Library Replacement | TraceLock Usage |
+|---|---|---|
+| `pydantic` | `dataclasses` | Structured security event and analysis models |
+| `requests` | `urllib` | HTTP functionality if network access is required |
+| `pandas` | `csv`, `json`, lists and dictionaries | Structured log and report data processing |
+| `numpy` | Built-in arithmetic and collections | Risk and anomaly score calculations |
+| `scikit-learn` | Custom Python scoring logic | Behavioral and anomaly analysis |
+| `rich` | `print()` and formatted strings | Terminal security reports |
+| `click` | `argparse` | Command-line interface |
+| `python-dateutil` | `datetime` | Event timestamps and duration calculations |
+| `orjson` | `json` | JSON report generation |
+| `ujson` | `json` | JSON serialization |
+| `PyYAML` | `json` / text parsing | Configuration and structured-data handling |
+| `loguru` | Standard `print()` / file I/O | Application output and diagnostics |
 
+These replacements are intentionally lightweight and keep the core TraceLock runtime free of third-party dependencies.
 
+## Standard Library Modules Used
 
-The following capabilities are implemented using Python standard-library functionality:
+TraceLock uses Python standard-library modules including:
 
+- `argparse` — command-line argument parsing
+- `dataclasses` — structured analysis models
+- `datetime` — timestamps and attack-sequence durations
+- `json` — machine-readable report generation
+- `re` — security log parsing and pattern matching
+- `pathlib` — filesystem path handling
+- `typing` — type annotations
+- `collections` — collection-based event processing where required
+- `sys` — command-line error handling and process control
 
+The exact imports can be inspected directly in the `tracelock/` source files.
 
-\- Security log parsing
+## Development-Only Dependency
 
-\- Event normalization
+The test suite uses:
 
-\- Event correlation
-
-\- Attack chain reconstruction
-
-\- Risk assessment
-
-\- MITRE ATT\&CK mapping
-
-\- Evidence extraction
-
-\- Behavior profiling
-
-\- Anomaly detection
-
-\- Security recommendations
-
-\- Terminal report generation
-
-\- JSON report generation
-
-
-
-\## Standard Library Modules
-
-
-
-TraceLock uses standard Python modules for its core implementation, including modules such as:
-
-
-
-\- argparse
-
-\- dataclasses
-
-\- datetime
-
-\- json
-
-\- pathlib
-
-\- re
-
-\- typing
-
-
-
-The exact modules used by each implementation file can be inspected directly in the `tracelock/` source directory.
-
-
-
-\## Testing Dependency
-
-
-
-The automated test suite uses `pytest`.
-
-
-
-Pytest is a development and testing dependency and is not required by the TraceLock analysis engine itself.
-
-
-
-Tests can be executed with:
-
-
-
-python -m pytest -v
-
-
-
-\## Runtime
-
-
-
-TraceLock requires:
-
-
-
-\- Python 3.13 or newer
-
-
-
-The main analysis command is:
-
-
-
-python -m tracelock.cli examples\\sample\_attack.log
-
-
-
-\## Dependency Philosophy
-
-
-
-TraceLock intentionally avoids external security-analysis frameworks and services in its core detection pipeline.
-
-
-
-This keeps the project:
-
-
-
-\- Lightweight
-
-\- Portable
-
-\- Easy to inspect
-
-\- Easy to reproduce
-
-\- Suitable for restricted environments
-
-\- Suitable for zero-dependency security tooling experiments
-
-
-
-\## Verification
-
-
-
-The core application can be executed directly with Python.
-
-
-
-The automated test suite currently verifies:
-
-
-
-\- Normal login activity
-
-\- Brute-force activity
-
-\- Command and privileged activity
-
-\- Full multi-stage attack chains
-
-
-
-The current test suite passes all four analysis scenarios.
-
-
-
-\## Zero Dependency Goal
-
-
-
-The goal of TraceLock is to demonstrate that useful defensive security analysis can be constructed using Python's standard library without depending on external security-analysis packages.
-
-
-
-Third-party development tools such as pytest may be used to validate the project, while the core TraceLock engine remains standard-library focused.
+```text
+pytest
