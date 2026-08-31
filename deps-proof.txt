@@ -1,0 +1,10 @@
+TraceLock Dependency Proof
+==========================
+
+Python: 3.13.14
+Runtime dependencies: STANDARD LIBRARY ONLY
+Third-party runtime packages: 0
+
+Runtime dependency policy:
+TraceLock uses only the Python standard library.
+pytest is used only for development/testing and is not a runtime dependency.
