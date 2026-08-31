@@ -2,7 +2,9 @@
 
 TraceLock is a lightweight security event correlation and attack analysis engine built in Python.
 
-It transforms raw security logs into a structured attack narrative by correlating related events, identifying attack techniques, extracting evidence, profiling attacker behavior, detecting anomalies, assessing risk, and generating actionable security recommendations.
+It transforms raw security logs into structured attack narratives by correlating related events, identifying security techniques, extracting evidence, profiling behavior, detecting anomalies, assessing risk, and generating actionable security recommendations.
+
+TraceLock is designed as a **standard-library-only runtime project**. It does not require external security-analysis services or third-party runtime packages.
 
 ## Features
 
@@ -11,8 +13,8 @@ It transforms raw security logs into a structured attack narrative by correlatin
 - Attack chain reconstruction
 - Risk scoring and severity assessment
 - MITRE ATT&CK technique mapping
-- Evidence extraction
-- Attacker behavior profiling
+- Security evidence extraction
+- Behavioral profiling
 - Behavioral anomaly detection
 - Security response recommendations
 - Human-readable terminal reports
@@ -80,18 +82,28 @@ TraceLock/
 │   └── command_activity.log
 ├── tests/
 │   └── test_analysis.py
-├── reports/
 ├── README.md
 ├── STDLIB.md
+├── LICENSE
 └── .gitignore
 ```
 
 ## Requirements
 
-- Python 3.13+
-- pytest for running the automated tests
+### Runtime
 
-TraceLock is designed to run without external security-analysis services.
+- Python 3.13+
+- Python standard library only
+- No third-party runtime packages
+
+### Testing
+
+- `pytest` is used only for the automated test suite.
+- `pytest` is a development/test dependency and is not required to run TraceLock's security-analysis engine.
+
+TraceLock does not depend on external security-analysis APIs or services.
+
+For details about standard-library compliance, see [`STDLIB.md`](STDLIB.md).
 
 ## Setup
 
@@ -102,7 +114,9 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the test dependency:
+No third-party package is required to run TraceLock.
+
+To run the automated tests, install `pytest`:
 
 ```powershell
 python -m pip install pytest
@@ -162,26 +176,38 @@ TraceLock can generate a structured JSON report:
 python -m tracelock.cli examples\sample_attack.log --json reports\sample_attack.json
 ```
 
-The JSON report contains structured attack-chain information suitable for further processing or integration with other security tools.
+The JSON report contains structured attack-chain information suitable for further processing or integration with other security-analysis workflows.
 
 ## Testing
 
 Run the complete automated test suite:
 
 ```powershell
-python -m pytest tests\test_analysis.py -v
+python -m pytest -v
 ```
 
-The test suite covers:
+The test suite currently covers:
 
 - Normal login activity
 - Brute-force activity
-- Command and privileged activity
+- Command activity
 - Full multi-stage attack chains
+- Risk assessment
+- MITRE ATT&CK mapping
+- Evidence extraction
+- Behavioral analysis
+- Anomaly analysis
+- Security recommendations
+
+A successful test run currently reports:
+
+```text
+4 passed
+```
 
 ## Example Detection
 
-For a multi-stage attack containing repeated authentication failures followed by successful authentication, command execution, and privileged activity, TraceLock can identify:
+For a multi-stage security event sequence containing repeated authentication failures followed by successful authentication, command execution, and privileged activity, TraceLock can produce findings such as:
 
 ```text
 Risk: CRITICAL
@@ -196,7 +222,9 @@ Score: 100/100
 Severity: CRITICAL
 ```
 
-TraceLock also generates investigation recommendations for:
+The analysis represents a correlation-based security assessment. Detection results should be investigated and validated against the underlying logs and system context.
+
+TraceLock can also generate investigation recommendations for:
 
 - Repeated authentication failures
 - Successful authentication transitions
@@ -212,15 +240,15 @@ Repeated authentication failures can be correlated as potential credential attac
 
 ### Successful Access Transition
 
-Authentication failures followed by successful authentication can indicate a possible successful credential compromise.
+Authentication failures followed by successful authentication can indicate a possible successful credential compromise or unauthorized access.
 
 ### Post-Authentication Execution
 
-Command execution following successful authentication can be identified as suspicious activity.
+Command execution following successful authentication can be identified as suspicious activity within a correlated sequence.
 
-### Privilege Escalation Activity
+### Privileged Activity
 
-Privileged activity following command execution can indicate possible privilege escalation.
+Privileged activity following command execution can indicate possible privilege escalation or unauthorized elevated activity.
 
 ### Multi-Stage Attack Correlation
 
@@ -228,12 +256,14 @@ Multiple related events can be reconstructed into a single attack chain instead 
 
 ## MITRE ATT&CK Mapping
 
-TraceLock maps detected behaviors to relevant MITRE ATT&CK techniques, including:
+TraceLock maps detected event patterns to relevant MITRE ATT&CK techniques, including:
 
-- T1110 - Brute Force
-- T1078 - Valid Accounts
-- T1059 - Command and Scripting Interpreter
-- T1068 - Exploitation for Privilege Escalation
+- `T1110` - Brute Force
+- `T1078` - Valid Accounts
+- `T1059` - Command and Scripting Interpreter
+- `T1068` - Exploitation for Privilege Escalation
+
+These mappings are based on the event patterns represented in the input logs and should be validated during investigation.
 
 ## Risk Assessment
 
@@ -246,7 +276,11 @@ TraceLock evaluates correlated activity using security risk factors such as:
 - Authentication-to-access transitions
 - Multi-stage attack progression
 
-The resulting assessment includes a severity level and numerical risk score.
+The resulting assessment includes:
+
+- Severity level
+- Numerical risk score
+- Contributing risk factors
 
 ## Security Recommendations
 
@@ -256,9 +290,10 @@ Based on detected activity, TraceLock generates prioritized recommendations such
 - Reviewing successful authentication
 - Inspecting executed commands
 - Investigating privileged activity
-- Preserving logs and investigating the complete attack sequence
+- Preserving logs
+- Investigating the complete correlated attack sequence
 
-Recommendations are assigned priorities such as HIGH and URGENT.
+Recommendations are assigned priorities such as `HIGH` and `URGENT`.
 
 ## Example Output
 
@@ -290,16 +325,44 @@ Recommendations:
 [URGENT] Investigate Complete Attack Sequence
 ```
 
+## Standard Library Compliance
+
+TraceLock's security-analysis engine uses Python's standard library for runtime functionality.
+
+The project does not require third-party packages for:
+
+- Log parsing
+- Event correlation
+- Attack-chain reconstruction
+- Risk assessment
+- MITRE mapping
+- Evidence extraction
+- Behavioral analysis
+- Anomaly detection
+- Recommendation generation
+- Terminal report generation
+- JSON report generation
+
+`pytest` is used only as a development dependency for automated testing.
+
+See [`STDLIB.md`](STDLIB.md) for the project's standard-library compliance documentation.
+
 ## Purpose
 
-TraceLock is intended as a security-analysis and learning project demonstrating how security events can be transformed into correlated attack narratives and actionable findings.
+TraceLock is a security-analysis and learning project demonstrating how raw security events can be transformed into correlated attack narratives, behavioral findings, anomaly indicators, risk assessments, and actionable recommendations.
+
+The project focuses on explainable, deterministic analysis of structured security events rather than relying on external AI or security-analysis services.
 
 ## Security Notice
 
-TraceLock is designed for authorized defensive security analysis, testing, education, and research.
+TraceLock is intended for authorized defensive security analysis, testing, education, and research.
 
 Only analyze logs and systems that you are authorized to access.
 
+TraceLock provides analytical findings based on supplied event data. Its results should be treated as investigation aids rather than definitive proof of compromise.
+
 ## License
 
-This project is provided for educational and security research purposes.
+TraceLock is released under the MIT License.
+
+See [`LICENSE`](LICENSE) for the full license text.
