@@ -1,5 +1,6 @@
 import json
 from dataclasses import asdict
+from pathlib import Path
 
 from .correlator import AttackChain
 from .risk import RiskAssessment
@@ -257,9 +258,13 @@ def save_report(
     content: str,
 ) -> None:
 
-    with open(
-        path,
-        "w",
+    output_path = Path(path)
+    output_path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+    output_path.write_text(
+        content,
         encoding="utf-8",
-    ) as file:
-        file.write(content)
+    )
